@@ -1,0 +1,79 @@
+# ── Python ──────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node / Frontend ──────────────────────────────────────────────
+node_modules/
+dist/
+.vite/
+*.local
+
+# ── Environment / Secrets ────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+RagBackend/.env
+!RagBackend/.env.example
+.venv
+venv/
+RagBackend/.venv/
+RagBackend/venv/
+
+# ── Local knowledge files / vector stores ────────────────────────
+RagBackend/local-KLB-files/
+RagBackend/knowledge_base/vectorstores/
+RagBackend/metadata/
+RagBackend/user_avatars/
+RagBackend/data/
+knowledge_base/vectorstores/
+local-KLB-files/
+metadata/
+uploads/
+user_avatars/
+*.faiss
+*.pkl
+*.index
+*.sqlite
+*.sqlite3
+*.db
+
+# ── Build artifacts ──────────────────────────────────────────────
+*.manifest
+*.spec
+*.so
+*.dll
+*.dylib
+*.lib
+*.jar
+*.war
+*.ear
+*.iml
+*.class
+
+# ── OS / Editor ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Logs ─────────────────────────────────────────────────────────
+*.log
+logs/
+RagBackend/logs/
+
+# ── Script binaries (keep source, not compiled) ──────────────────
+*.exe
+*.cmd
+*.bat
+*.sh

@@ -1,0 +1,83 @@
+# DATA_MAP
+
+- `readme.md`
+  - GitHub 展示入口文档，记录功能介绍、技术栈、启动方式、使用流程与上传前检查事项
+  - 说明默认 `qwen2:0.5b` 是本地开发演示配置，企业级部署可切换云端 API 或内网模型服务
+- `.gitignore`
+  - 忽略 `.env`、本地知识库、向量库、数据库、前端构建产物、日志和缓存
+- `RUNBOOK.md`
+  - 日常实验启动说明，记录 VSCode 终端命令、服务端口、自检顺序与常见故障处理
+- `localStorage`
+  - `jwt`：登录态令牌
+  - `locale`：界面语言
+  - `kb_starred_ids`：星标知识库
+  - `kb_recent_ids`：最近访问知识库
+  - `kb_pinned_ids`：置顶知识库
+  - `selected_model`：聊天页当前选择的本地或云端模型
+  - `ollamaSettings`：聊天页 Ollama 服务地址与超时配置
+  - 其他 Pinia 持久化状态：用户信息与业务状态
+- `RagFrontend/src/views/Chat.vue`
+  - RAG 模式下负责调用 `/api/chat/send-message`
+  - 请求携带 `rag_mode`、`kb_id`、`retrieval_config`
+  - 默认检索配置为 `strategy=rrf`、`topK=3`、`scoreThreshold=0.3`
+  - 支持读取路由查询参数 `kb_id` / `rag=1`，从知识库详情页进入时自动开启并选中对应知识库
+  - 选择知识库后调用 `/api/vectorize/stats/{kb_id}` 展示向量库就绪状态
+  - 知识库状态面板可手动重新调用 `/api/vectorize/stats/{kb_id}` 刷新向量化状态
+  - 当前会话历史使用“旧消息在前、最新消息在后”的数组顺序
+  - 发送给后端的 `history` 直接沿用前端顺序，避免界面展示与上下文顺序不一致
+  - 读取已保存会话时会兼容旧的倒序历史，并在前端归一化为旧到新
+  - 传给聊天组件的 `displayHistory` 会反转业务历史，以适配 TDesign Chat 的 `column-reverse`
+- `RagFrontend/src/components/chat-main-unit/chat-main-unit.vue`
+  - 展示层数据遵循 TDesign Chat 约定：数组头部为最新消息，视觉上显示在底部
+  - 展示 RAG 来源折叠列表，包含来源文件、分数和片段预览
+- `RagFrontend/src/views/KnowledgePages/KnowledgeBase.vue`
+  - 知识库卡片会补充向量化状态字段：`vectorStatus`、`vectorStatusLabel`、`vectorMeta`
+- `RagFrontend/src/views/KnowledgePages/KnowledgeDetail.vue`
+  - 上传文档成功后保留当前弹窗并显示“立即向量化”入口
+  - 向量化成功后的聊天跳转会携带当前知识库 ID
+  - 顶部“去智能问答”按钮会调用 `/api/vectorize/stats/{kb_id}`，确认已有向量库后再跳转
+- `RagFrontend/src/components/knowledge-unit/KbCard.vue`
+  - 展示知识库向量化状态徽标和简要元信息
+- `RagBackend/.env`
+  - 数据库连接
+  - JWT 密钥
+  - Ollama / 模型配置
+  - 云端模型密钥，例如 `DEEPSEEK_API_KEY`、`OPENAI_API_KEY`
+  - 可选企业集成配置
+- `RagBackend/models_config.json`
+  - 后端文件级默认模型配置
+  - 当前默认 `llm_model` / `kg_model` 均为 `qwen2:0.5b`
+  - 不保存明文 API Key；运行时优先读取环境变量
+- MySQL `rag_user_db.user_profile`
+  - 个人中心资料表
+  - 兼容字段：`name` / `signature` / `social_media` / `avatar`
+  - 兼容字段：`nickname` / `avatar_url` / `bio`
+- `RagBackend/local-KLB-files/{kb_id}`
+  - 知识库源文档目录与 `knowledge_data.json`
+- `RagBackend/local-KLB-files/{kb_id}/vectorstore` 或 `RagBackend/knowledge_base/vectorstores/kb_{hash}`
+  - 知识库问答使用的向量索引
+  - Windows / FAISS 下中文知识库名会映射为 ASCII 安全目录
+  - 旧版 `/api/RAG/ingest` 与增量向量化均优先写入 `knowledge_base/vectorstores/kb_{hash}`
+- `knowledge_base/vectorstores/kb_{hash}`（项目根目录）
+  - 历史兼容路径；曾由旧 `/api/RAG/ingest` 误写入
+  - stats 与聊天接口会临时读取该目录，后续新向量化统一写入 `RagBackend/knowledge_base/vectorstores`
+- `RagBackend/local-KLB-files/{kb_id}/native_vectorstore`
+  - 原生 RAG 向量库目录，包含 `native.index` 与 `native_docs.pkl`
+  - 智能问答页后端会在 LangChain 向量库不存在时自动兼容该目录
+- `GET /api/vectorize/stats/{kb_id}`
+  - 返回 LangChain 与 Native 向量库路径、关键索引文件存在性、任一向量库是否可用
+  - 前端知识库详情页和聊天页会使用该接口判断向量化真实状态
+  - Native 路径基于 `RagBackend/local-KLB-files/{kb_id}/native_vectorstore` 计算
+- `RagBackend/chat_units/chat_management/chat_send.py`
+  - 智能问答页 RAG 入口，负责根据 `kb_id` 自动加载 LangChain 或 Native 向量库
+- `RagBackend/RAG_M/src/rag/rag_pipeline.py`
+  - RAG Prompt 要求只引用真实来源名，禁止输出占位词或编造未规定制度
+  - 生成回答前会按用户问题关键词裁剪每个来源的上下文，减少无关条款进入 prompt
+  - 对制度类明确条款优先生成抽取式答案，例如迟到、加班餐补、年终奖等问题可绕过小模型自由生成
+- `RagBackend/RAG_M/src/rag/native_rag.py`
+  - 原生 RAG 备选链路同样会裁剪上下文，并收紧小模型 prompt 的拒答规则
+  - 原生 RAG 备选链路同样支持抽取式回答保护
+- `RagBackend/metadata/vector_hash_index/{kb_id}_hash_index.json`
+  - 增量向量化哈希索引，记录文档哈希、分块数和向量化状态
+- `RagBackend/metadata`、`knowledge_base`、`local-KLB-files`
+  - 文件、元数据、向量库与静态资源
