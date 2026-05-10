@@ -3,6 +3,8 @@
 - `readme.md` - GitHub 项目主页说明
   - 面向公开展示，说明项目简介、核心功能、技术栈、本地启动、使用流程和上传 GitHub 前检查
   - 说明当前版本为初版，本地 Ollama 模型用于开发演示，企业使用可扩展云端 API 或内网模型服务
+- `ENTERPRISE_ROADMAP.md` - 企业级优化路线图
+  - 记录 Agentic RAG、DeepResearch、Model Routing、RAG 质量优化和企业级产品化路线
 - `.gitignore` - GitHub 上传忽略规则
   - 忽略环境变量、本地知识库文件、向量库、数据库、构建产物、日志和缓存
 - `RUNBOOK.md` - VSCode 终端日常实验启动说明
@@ -47,3 +49,15 @@
 - `/settings` - 系统设置
 - `/user` - 个人中心
   - 个人资料接口兼容 `name/avatar/signature` 与 `nickname/avatar_url/bio` 字段
+
+- /chat - 智能问答
+  - RAG 模式现在通过后端 KnowledgeSearchTool 调用知识库检索，接口返回继续兼容原有 reply/sources/retrieval_mode，同时补充 agent_mode/tool_calls 便于后续 Agent 编排。
+
+- `/api/agent/deep-research` - DeepResearch 调试接口
+  - 不改动聊天页现有 RAG 链路，后端独立支持复杂问题拆分、多次知识库检索、来源去重和结构化研究结果返回。
+
+- `/api/agent/deep-research`
+  - 子问题拆分已优先识别请假、迟到、报销等制度主题，避免多个制度混在同一次检索中。
+
+- `/api/agent/deep-research`
+  - 返回结果会对每个子问题答案做轻量文本清洗，使制度类结尾表达更自然。

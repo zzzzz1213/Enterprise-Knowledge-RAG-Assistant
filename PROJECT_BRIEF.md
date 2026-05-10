@@ -36,3 +36,12 @@
 - 已重写 `readme.md` 为 GitHub 展示版，聚焦企业知识库、RAG 问答、本地模型和启动流程
 - 已补强 `.gitignore`，避免上传 `.env`、本地知识库文件、向量库、数据库、构建产物和缓存
 - `readme.md` 已补充初版说明：本地 `qwen2:0.5b` 是开发演示默认配置，后续企业级版本将继续完善云端模型 API 与内网模型服务接入
+- 已新增 `ENTERPRISE_ROADMAP.md`，保存后续企业级优化路线：Agentic RAG、DeepResearch、Model Routing、RAG 质量优化和企业工程化
+
+- 已完成 Agentic RAG 第一阶段的最小工具化：新增 KnowledgeSearchTool，将智能问答 RAG 模式改为通过 Agent 工具调用现有 RAG 链路，保留原有检索、生成和来源引用逻辑。
+
+- 已完成 Agentic RAG 第二阶段最小闭环：新增 DeepResearch 调试接口，可将复杂问题拆成子问题，逐个调用 KnowledgeSearchTool，并返回结构化结论、证据、来源与不确定点。
+
+- 已优化 DeepResearch 最小闭环质量：复杂制度问题会优先按已知主题拆分为请假、迟到、报销等独立子问题，并减少证据充足时的 uncertainty 误判。
+
+- DeepResearch 输出层已增加回答清洗，减少“相关规定规定”等不自然表达，不影响底层 RAG 检索链路。

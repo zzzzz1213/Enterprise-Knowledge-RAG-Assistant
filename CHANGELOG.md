@@ -55,6 +55,7 @@
 - 重写 `readme.md` 为 GitHub 展示版，突出企业知识库、RAG 问答、引用来源、本地 `qwen2:0.5b` 和启动流程
 - 补强 `.gitignore`，避免公开仓库上传 `.env`、本地知识库文件、向量库、数据库、构建产物和缓存
 - 调整 README 模型说明：当前版本为初版，本地 `qwen2:0.5b` 用于开发演示，企业级演进方向包括云端模型 API 与企业内网模型服务
+- 新增 `ENTERPRISE_ROADMAP.md`，保存后续高级优化方向：Agentic RAG、DeepSearch/DeepResearch、Model Routing、RAG 质量优化和企业级工程化
 - 新增项目级说明文档：`PROJECT_BRIEF.md`、`PAGE_MAP.md`、`DATA_MAP.md`
 
 ### 变更文件
@@ -92,6 +93,7 @@
 - `dev.ps1`
 - `.gitignore`
 - `readme.md`
+- `ENTERPRISE_ROADMAP.md`
 - `RUNBOOK.md`
 - `CHANGELOG.md`
 - `PROJECT_BRIEF.md`
@@ -519,3 +521,11 @@ c8c5fea  feat: bugfix + hybrid RAG + KG
 ---
 
 *报告由 AI 自动生成 · 2026-03-24*
+
+- Agentic RAG 第一阶段：新增 RagBackend/agent_tools/knowledge_search_tool.py，将知识库检索封装为 Agent Tool；聊天接口 RAG 模式改为调用该工具，并保留原有 RAG 链路和前端兼容返回字段。
+
+- Agentic RAG 第二阶段：新增 `RagBackend/agent_tools/deep_research_agent.py` 与 `/api/agent/deep-research` 调试接口，支持问题拆分、多次调用 KnowledgeSearchTool、来源去重和结构化研究结果返回；普通聊天 RAG 链路保持不变。
+
+- 优化 DeepResearch 调试接口：针对“分别说明请假、迟到、报销”等问题按主题拆分子问题，并收紧 uncertainty 判断，减少证据充足时的误报。
+
+- 优化 DeepResearch 输出文本：清洗“员工请假有什么规定相关规定”等展示层冗余后缀，普通 RAG 链路不变。

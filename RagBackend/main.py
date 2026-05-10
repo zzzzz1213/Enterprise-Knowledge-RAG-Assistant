@@ -269,6 +269,14 @@ try:
 except Exception as _e:
     logger.warning(f"Agent企业工具链加载失败: {_e}")
 
+# DeepResearch Agentic RAG workflow
+try:
+    from agent_tools.deep_research_agent import router as deep_research_router
+
+    app.include_router(deep_research_router, tags=["Agent-DeepResearch"])
+    logger.info("DeepResearch Agentic RAG module loaded")
+except Exception as _e:
+    logger.warning(f"DeepResearch Agentic RAG module failed to load: {_e}")
 # Multi-model extension
 try:
     from multi_model.extended_model_router import router as ext_model_router

@@ -228,7 +228,8 @@ def _try_build_extractive_answer(
     selected = first["sentences"][:3]
     answer_body = "".join(selected)
     subject = _answer_subject(question, direct_terms)
-    return f"根据{first['label']}，{answer_body}知识库未提供除上述内容外的其他{subject}规定。"
+    suffix = "" if subject.endswith(("规定", "处理", "标准", "时间")) else "规定"
+    return f"根据{first['label']}，{answer_body}知识库未提供除上述内容外的其他{subject}{suffix}。"
 
 
 def _format_context(docs_with_sources: List[Dict[str, Any]], question: str) -> str:

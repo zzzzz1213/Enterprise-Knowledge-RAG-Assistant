@@ -290,19 +290,25 @@ async def send_message(req: SendMessageRequest):
                 status_code=400, detail="当前知识库问答仅支持本地 Ollama 模型"
             )
 
-        logger.info(f"[chat_send] RAG 模式: kb_id={req.kb_id}, model={model_id}")
-        rag_result = _run_rag_query(
+        logger.info(f"[chat_send] RAG 工具模式: kb_id={req.kb_id}, model={model_id}")
+        from agent_tools.knowledge_search_tool import KnowledgeSearchTool
+
+        knowledge_tool = KnowledgeSearchTool(search_func=_run_rag_query)
+        tool_result = knowledge_tool.run(
             query=req.message,
             model_id=model_id,
             kb_id=req.kb_id,
             retrieval_config=req.retrieval_config,
         )
         return {
-            "reply": rag_result["reply"],
+            "reply": tool_result["answer"],
             "model": model_id,
             "provider": "ollama",
-            "sources": rag_result["sources"],
-            "retrieval_mode": rag_result["retrieval_mode"],
+            "sources": tool_result["sources"],
+            "retrieval_mode": tool_result["retrieval_mode"],
+            "agent_mode": "knowledge_tool",
+            "tool_name": tool_result["tool_name"],
+            "tool_calls": [tool_result["tool_call"]],
         }
 
     # - Cloud model -

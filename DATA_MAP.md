@@ -3,6 +3,8 @@
 - `readme.md`
   - GitHub 展示入口文档，记录功能介绍、技术栈、启动方式、使用流程与上传前检查事项
   - 说明默认 `qwen2:0.5b` 是本地开发演示配置，企业级部署可切换云端 API 或内网模型服务
+- `ENTERPRISE_ROADMAP.md`
+  - 后续优化路线文档，记录 Agent 工具型 RAG、DeepResearch、Model Routing、RAG 质量优化和企业工程化阶段规划
 - `.gitignore`
   - 忽略 `.env`、本地知识库、向量库、数据库、前端构建产物、日志和缓存
 - `RUNBOOK.md`
@@ -50,8 +52,10 @@
   - 不保存明文 API Key；运行时优先读取环境变量
 - MySQL `rag_user_db.user_profile`
   - 个人中心资料表
-  - 兼容字段：`name` / `signature` / `social_media` / `avatar`
-  - 兼容字段：`nickname` / `avatar_url` / `bio`
+  - 兼容字段：
+ame` / `signature` / `social_media` / `avatar`
+  - 兼容字段：
+ickname` / `avatar_url` / `bio`
 - `RagBackend/local-KLB-files/{kb_id}`
   - 知识库源文档目录与 `knowledge_data.json`
 - `RagBackend/local-KLB-files/{kb_id}/vectorstore` 或 `RagBackend/knowledge_base/vectorstores/kb_{hash}`
@@ -62,7 +66,9 @@
   - 历史兼容路径；曾由旧 `/api/RAG/ingest` 误写入
   - stats 与聊天接口会临时读取该目录，后续新向量化统一写入 `RagBackend/knowledge_base/vectorstores`
 - `RagBackend/local-KLB-files/{kb_id}/native_vectorstore`
-  - 原生 RAG 向量库目录，包含 `native.index` 与 `native_docs.pkl`
+  - 原生 RAG 向量库目录，包含 
+ative.index` 与 
+ative_docs.pkl`
   - 智能问答页后端会在 LangChain 向量库不存在时自动兼容该目录
 - `GET /api/vectorize/stats/{kb_id}`
   - 返回 LangChain 与 Native 向量库路径、关键索引文件存在性、任一向量库是否可用
@@ -81,3 +87,21 @@
   - 增量向量化哈希索引，记录文档哈希、分块数和向量化状态
 - `RagBackend/metadata`、`knowledge_base`、`local-KLB-files`
   - 文件、元数据、向量库与静态资源
+
+- RagBackend/agent_tools/knowledge_search_tool.py
+  - Agentic RAG 第一阶段工具层，封装知识库检索调用、标准化 citation source，并返回 tool_call 元数据；底层仍复用 RagBackend/chat_units/chat_management/chat_send.py 中已验证的 RAG 查询函数。
+- RagBackend/chat_units/chat_management/chat_send.py
+  - RAG 模式通过 KnowledgeSearchTool 调用现有 _run_rag_query()，对前端保留 
+eply、sources、
+etrieval_mode 兼容字段，并新增 gent_mode、	ool_name、	ool_calls。
+
+- `RagBackend/agent_tools/deep_research_agent.py`
+  - Agentic RAG 第二阶段最小实现：按启发式规则拆分复杂问题，复用 KnowledgeSearchTool 逐个检索，输出 `summary`、`sub_questions`、`evidence`、`sources`、`uncertainty`、`tool_calls`。
+- `POST /api/agent/deep-research`
+  - 请求字段：`question`、`kb_id`、可选 `model`、`retrieval_config`、`max_sub_questions`；返回 DeepResearch 结构化结果，便于在 FastAPI docs 中先行验证。
+
+- `RagBackend/agent_tools/deep_research_agent.py`
+  - 新增制度主题拆分和更保守的 uncertainty 判断，避免将“除上述内容外未提供”误判为检索失败。
+
+- `RagBackend/agent_tools/deep_research_agent.py`
+  - DeepResearch 在汇总 evidence 前会清洗抽取式回答的展示文本，避免主题后缀重复；原始检索来源和工具调用记录保持不变。
